@@ -5,12 +5,15 @@ import { Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { Toaster } from "react-hot-toast";
-const ProtectedRoute = lazy(() => import("./components/protectedRoute"));
-import { store } from "./app/store/store";
+import { store } from "./app/store";
 const App = lazy(() => import("./App"));
+const Home = lazy(() => import("./pages/home"));
 const Login = lazy(() => import("./pages/login"));
 const Register = lazy(() => import("./pages/register"));
-const Home = lazy(() => import("./pages/home"));
+const EditorPage = lazy(() => import("./pages/editorPage"));
+const NotFound404 = lazy(() => import("./pages/notFound404"));
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -34,7 +37,7 @@ const router = createBrowserRouter([
         path: "editor/:roomId",
         element: (
           <Suspense fallback={<Loader />}>
-            <h1>editor</h1>
+            <EditorPage />
           </Suspense>
         ),
       },
@@ -56,6 +59,14 @@ const router = createBrowserRouter([
       </Suspense>
     ),
   },
+  {
+    path: "/*",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <NotFound404 />
+      </Suspense>
+    ), 
+  }
 ]);
 
 const rootElement = document.getElementById("root");

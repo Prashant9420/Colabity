@@ -1,5 +1,4 @@
 import { User } from "../models/user.model.js";
-import bcrypt from "bcryptjs";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -23,8 +22,7 @@ const Login = asyncHandler(async (req, res) => {
   if (!foundUser) {
     throw new ApiError(403, "User Not Found");
   }
-  const isPasswordMatch = foundUser.matchPassword(password);
-
+  const isPasswordMatch = await foundUser.matchPassword(password);
   if (!isPasswordMatch) throw new ApiError(401, "Invalid Credentials");
 
   const userInfo = foundUser.toJSON();
@@ -33,7 +31,6 @@ const Login = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: false,
     secure: false,
-    sameSite: "None",
   };
   res
     .status(200)
@@ -71,4 +68,26 @@ const Register = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, "User Created Successfully", createdUser));
 });
 
-export { Register, Login };
+const Logout = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    { new: true }
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("accessToken", options)
+    .json(new ApiResponse(200, {}, "User Logged Out Successfully"));
+});
+
+export { Register, Login, Logout };

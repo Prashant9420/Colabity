@@ -1,0 +1,7 @@
+.CodeMirror{
+    /* min-height: calc(100vh - 20px); */
+    min-height: 100%;
+    line-height: 1.6;
+    padding: 10px;
+    width: calc(100% - 20px);
+}

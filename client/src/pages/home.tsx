@@ -1,9 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import toast from "react-hot-toast";
+import { useNavigate,useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { logout } from "../features/user/authSlice";
+import { useDispatch } from "react-redux";
+import axios from "axios";
 const Home = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const user = useSelector((state: any) => state.auth.user);
   const [roomId, setRoomId] = useState("");
   const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
   const createNewRoom = (e: any) => {
     e.preventDefault();
     const newId = uuid();
@@ -11,54 +21,100 @@ const Home = () => {
     toast.success("New room created");
   };
   const joinRoom = () => {
-    alert(username + " is Joining room with id: " + roomId);
+    if (roomId === "" || username === "") {
+      toast.error("Room-ID or Username can't be empty");
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigate(`/editor/${roomId}`, {
+        state: {
+          username,
+          roomId,
+        },
+      });
+    }, 1000);
   };
+
+  const handleEnter = (e: any) => {
+    if (e.code === "Enter") joinRoom();
+  };
+  const handleLogout =async () => {
+    // try{
+    //   await axios.get("")
+    // }
+  }
+  useEffect(() => {
+    if(localStorage.getItem("justLoggedIn")==="1") {
+      toast.success(`Welcome ${user.payload.user.username}`);
+      localStorage.removeItem("justLoggedIn");
+    }
+    if (localStorage.getItem("meetingJustLeft") === "1") {
+      toast.success("Meeting Left");
+      localStorage.removeItem("meetingJustLeft");
+    }
+    setUsername(user.payload.user.username);
+  }, []);
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="bg-primary-50 p-[20px] rounded-md w-[500px] max-w-[90%] shadow-lg transition-shadow duration-1000 hover:shadow-primary-100">
+    <div className="flex h-screen items-center justify-center bg-neutral">
+      {loading ? (
+        <div className=" bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
+          <span className="loading loading-bars loading-lg"></span>
+        </div>
+      ) : null}
+      <button
+        onClick={handleLogout}
+        className=" border-none bg-primary fixed right-0 top-0 m-4 font-bold text-base-100 w-20 h-10 rounded-md hover:bg-secondary transition-transform duration-300 ease-in-out active:scale-[0.9]"
+      >
+        LOGOUT
+      </button>
+      <div className=" bg-primary p-[20px] rounded-md w-[500px] max-w-[90%] shadow-lg transition-shadow duration-1000 hover:shadow-secondary">
         <img src="/logo.png" className=" h-32" />
-        <h4 className="mb-6 mt-2 font-bold text-primary-400">
+        <h4 className="mb-6 mt-2 font-bold text-base-100">
           Paste invitation ROOM ID
         </h4>
         <div className="flex flex-col">
           <input
             type="text"
-            className="bg-primary-300 p-2 mb-2 outline-none rounded-md text-[white] border-none"
+            className="bg-neutral p-2 mb-2 outline-none rounded-md text-[white] border-none"
             placeholder="Room-ID"
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
+            onKeyUp={handleEnter}
           />
           <input
             type="text"
-            className="bg-primary-300 p-2 mb-2 outline-none rounded-md text-[white] border-none"
+            className="bg-neutral p-2 mb-2 outline-none rounded-md text-[white] border-none"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            onKeyUp={handleEnter}
           />
           <button
             onClick={joinRoom}
-            className=" border-none bg-primary-400 ml-auto font-bold text-primary-50 hover:text-primary-100 w-20 h-10 rounded-md hover:bg-[#161616] transition-transform duration-300 ease-in-out active:scale-[0.9]"
+            className=" border-none bg-base-100 ml-auto font-bold text-primary hover:text-secondary w-20 h-10 rounded-md hover:bg-[#161616] transition-transform duration-300 ease-in-out active:scale-[0.9]"
           >
             JOIN
           </button>
-          <span className="ml-auto mr-auto mt-3">
+          <span className="ml-auto text-neutral mr-auto mt-3">
             don't have an invite? create a &nbsp;
             <a
               href=""
               onClick={createNewRoom}
-              className=" text-primary-300 border-b-2 hover:text-primary-200"
+              className=" text-neutral border-b-2 border-neutral hover:border-accent hover:text-accent"
             >
               new room
             </a>
           </span>
         </div>
       </div>
-      <footer className="fixed bottom-0 text-primary-50 mb-2">
+      <footer className="fixed bottom-0 text-primary mb-2">
         <h4>
           Built by Prashant Pal &nbsp;
           <a
             href="https://github.com/prashant9420"
-            className=" text-primary-100 border-b-2 hover:text-primary-200"
+            className=" text-secondary border-b-2 border-secondary hover:text-accent hover:border-accent"
             target="_blank"
           >
             github
