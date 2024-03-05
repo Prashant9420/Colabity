@@ -2,10 +2,12 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { serverUrl } from "../utils/serverUrl";
 import toast from "react-hot-toast";
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,17 +18,24 @@ const Register = () => {
         toast.error("All fields are required");
         return;
       }
+      const formData = new FormData();
+      
+      formData.append("avatar", avatar);
+      formData.append("username", username);
+      formData.append("password", password);
+      formData.append("email", email);
       setIsLoading(true);
+      
       const data = await axios.post(
-        "http://localhost:5000/api/v1/users/register",
-        {
-          username,
-          email,
-          password,
+        `${serverUrl}/api/v1/users/register`,formData,{
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
       setIsLoading(false);
       if (data.data.statusCode === 201) {
+        toast.success("User Registered Successfully");
         navigate("/login");
       }
       console.log(data);
@@ -54,7 +63,7 @@ const Register = () => {
         </div>
       ) : null}
       <h1 className="mb-7 font-bold text-3xl">REGISTER</h1>
-      <div className=" lg:w-1/3 md:w-1/2 w-2/3 border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
+      <div className=" lg:w-1/3 md:w-1/2 w-[90%] border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
         <div className="flex flex-col w-full">
           <label className="input input-accent flex items-center gap-2">
             <svg
@@ -115,7 +124,10 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          <input type="file" className="file-input file-input-accent w-full max-w-xs mt-4" />
+          <div>
+        {"Choose Avatar ( OPTIONAL )"}&nbsp;&nbsp;&nbsp;
+          <input type="file" onChange={(e:any)=>setAvatar(e.target.files[0])} className="file-input file-input-accent w-full max-w-xs mt-4" />
+          </div>
         </div>
         <button
           className="btn btn-active btn-neutral mt-10 hover:bg-black hover:text-secondary"

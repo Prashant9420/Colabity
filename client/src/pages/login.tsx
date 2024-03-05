@@ -1,48 +1,33 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { login } from "../features/user/authSlice";
+import { loginUser } from "../features/user/authSlice";
 import toast from "react-hot-toast";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector((state: any) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const handleLogin = async (e: any) => {
     e.preventDefault();
     if (email === "" || password === "") {
       toast.error("Email or Password can't be empty");
       return;
     }
-    setIsLoading(true);
-    try {
-      const data = await axios.post(
-        "http://localhost:5000/api/v1/users/login",
-        {
-          email,
-          password,
-        }
-      );
-      setIsLoading(false);
-      const isLoggedIn = data.status === 200;
-      const userInfo = data.data;
-      if (isLoggedIn) {
-        dispatch(login(userInfo.data));
-        localStorage.setItem("justLoggedIn", "1");
-        navigate("/");
-      }
+    const res = await dispatch<any>(loginUser({ email, password }));
 
-    } catch (err: any) {
-      const code = err.response.status;
-      setIsLoading(false);
-      if(code===403)
-        toast.error("user not found");
-      else{
-        toast.error("invalid credentials");
-      }
+    console.log(res);
+    if (res.payload?.success) {
+      localStorage.setItem("justLoggedIn", "1");
+      navigate("/");
+    } else if (res.error?.message === "Request failed with status code 403") {
+      toast.error("User Not Found");
+    } else if (res.error?.message === "Request failed with status code 401") {
+      toast.error("Invalid Credentials");
+    } else {
+      toast.error("Check Your Network Connection");
     }
   };
   const handleEnterKey = (e: any) => {
@@ -52,13 +37,13 @@ const Login = () => {
   };
   return (
     <div className="h-screen flex flex-col items-center w-full justify-center">
-      {isLoading ? (
+      {user.loading ? (
         <div className=" bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
           <span className="loading loading-bars loading-lg"></span>
         </div>
       ) : null}
       <h1 className="mb-7 font-bold text-3xl">LOGIN</h1>
-      <div className=" lg:w-1/3 md:w-1/2 w-2/3 border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
+      <div className=" lg:w-1/3 md:w-1/2 w-[90%] border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
         <div className="flex flex-col w-full">
           <label className="input input-accent flex items-center gap-2">
             <svg
@@ -71,7 +56,7 @@ const Login = () => {
               <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
             </svg>
             <input
-              type="text"
+              type="email"
               className="grow"
               placeholder="Email"
               value={email}
@@ -100,8 +85,7 @@ const Login = () => {
               onKeyUp={handleEnterKey}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </label>
-        </div>
+          </label></div>
         <button
           className="btn btn-active btn-neutral mt-10 hover:bg-black hover:text-secondary"
           onClick={handleLogin}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { lazy } from "react";
 import Client from "../components/Client";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import Hamburgur from "../components/Hamburger"
 import { useNavigate } from "react-router-dom";
@@ -10,10 +11,12 @@ const Editor = lazy(() => import("../components/Editor/Editor"));
 const EditorPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const user = useSelector((state: any) => state.auth.user);
+  console.log(user)
   const [showLeftColumn, setShowLeftColumn] = useState(true);
   const [clients, setClients] = useState([
-    { socketId: 1, username: location.state.username },
-    { socketId: 1, username: "dewansh pal" },
+    { socketId: 1, username: location.state.username,avatar:user.user.avatar },
+    { socketId: 1, username: "dewansh pal",avatar:"" },
   ]);
   const handleCopyRoomId = () => {
     navigator.clipboard.writeText(location.state.roomId);
@@ -47,6 +50,7 @@ const EditorPage = () => {
             <Client
               username={client.username}
               socketId={client.socketId}
+              avatar={client.avatar}
               key={key}
             />
           ))}
@@ -58,7 +62,8 @@ const EditorPage = () => {
           >
             COPY Room-ID
           </button>
-          <button className="btn btn-outline btn-error mb-4" onClick={()=>{localStorage.setItem("meetingJustLeft","1");navigate('/',{state:{from:"meeting"}});}}>LEAVE</button>
+      
+          <button className="btn btn-outline btn-error mb-4" onClick={()=>{toast.success("Meeting Left");navigate('/',{state:{fromEditor:true}});}}>LEAVE</button>
         </div>
       </div>
       <div className="pt-4 pl-10 w-full overflow-hidden h-full bg-neutral text-xl">

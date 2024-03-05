@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import toast from "react-hot-toast";
-import { useNavigate,useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { logout } from "../features/user/authSlice";
 import { useDispatch } from "react-redux";
-import axios from "axios";
+import { logoutUser } from "../features/user/authSlice";
+
 const Home = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
   const user = useSelector((state: any) => state.auth.user);
+  const loading = useSelector((state: any) => state.auth.loading);
   const [roomId, setRoomId] = useState("");
   const [username, setUsername] = useState("");
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const createNewRoom = (e: any) => {
     e.preventDefault();
     const newId = uuid();
@@ -25,9 +26,7 @@ const Home = () => {
       toast.error("Room-ID or Username can't be empty");
       return;
     }
-    setLoading(true);
     setTimeout(() => {
-      setLoading(false);
       navigate(`/editor/${roomId}`, {
         state: {
           username,
@@ -40,21 +39,24 @@ const Home = () => {
   const handleEnter = (e: any) => {
     if (e.code === "Enter") joinRoom();
   };
-  const handleLogout =async () => {
-    // try{
-    //   await axios.get("")
-    // }
-  }
+  const handleLogout = async () => {
+    const res = await dispatch<any>(logoutUser());
+    console.log(res);
+    if (res.payload?.data.success === true) {
+      toast.success("Logged Out!");
+      return;
+    }
+    navigate("/login");
+    toast.error("your Access token has expired! Please login again.");
+  };
   useEffect(() => {
-    if(localStorage.getItem("justLoggedIn")==="1") {
-      toast.success(`Welcome ${user.payload.user.username}`);
+    if (localStorage.getItem("justLoggedIn") === "1") {
+      toast.success(`Welcome ${user.user.username}`);
       localStorage.removeItem("justLoggedIn");
     }
-    if (localStorage.getItem("meetingJustLeft") === "1") {
-      toast.success("Meeting Left");
-      localStorage.removeItem("meetingJustLeft");
+    if (location.state?.from === "meeting") {
     }
-    setUsername(user.payload.user.username);
+    setUsername(user.user.username);
   }, []);
   return (
     <div className="flex h-screen items-center justify-center bg-neutral">

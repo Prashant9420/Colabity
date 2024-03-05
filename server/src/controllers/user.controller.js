@@ -2,6 +2,9 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnImageKit } from "../utils/imageKit.js";
+import jwt from "jsonwebtoken";
 
 const generateTokens = async (userId) => {
   const user = await User.findById(userId);
@@ -29,8 +32,8 @@ const Login = asyncHandler(async (req, res) => {
 
   const { refreshToken, accessToken } = await generateTokens(userInfo._id);
   const options = {
-    httpOnly: false,
-    secure: false,
+    httpOnly: true,
+    secure: true,
   };
   res
     .status(200)
@@ -47,6 +50,7 @@ const Login = asyncHandler(async (req, res) => {
 
 const Register = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
+  console.log("hi from register controller");
   if ([username, email, password].some((field) => field === "")) {
     throw new ApiError(400, "All fields are required");
   }
@@ -54,12 +58,27 @@ const Register = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiError(409, "User Already Exists");
   }
+  console.log("req.file: ", req.file);
+  if (req.file) {
+    // const avatar = await uploadOnCloudinary(req.file.path);
+    const avatar = await uploadOnImageKit(req.file.path, req.file.filename);
+    if (!avatar) {
+      throw new ApiError(
+        500,
+        "Something went wrong while uploading the avatar"
+      );
+    }
+    console.log("avatar: ", avatar);
+    req.body.avatar = avatar.url;
+  }
   const user = await User.create({
     username,
     email,
+    avatar: req.body.avatar || "",
     password,
   });
   const createdUser = user.toJSON();
+
   if (!createdUser) {
     throw new ApiError(500, "something went wrong while registering the user");
   }
@@ -73,12 +92,11 @@ const Logout = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $set: {
-        refreshToken: undefined,
+        refreshToken: null,
       },
     },
     { new: true }
   );
-
   const options = {
     httpOnly: true,
     secure: true,
@@ -90,4 +108,40 @@ const Logout = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User Logged Out Successfully"));
 });
 
-export { Register, Login, Logout };
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies.refreshToken ||
+    req.headers.authorization.replace("Bearer ", "");
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "Unauthorized Request");
+  }
+  const decodedToken = jwt.verify(
+    incomingRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET
+  );
+
+  const user = await User.findById(decodedToken?.id);
+  if (!user) {
+    throw new ApiError(401, "Invalid Refresh Token");
+  }
+  if (incomingRefreshToken !== user.refreshToken) {
+    throw new ApiError(401, "Invalid Refresh Token");
+  }
+  const { newAccessToken, newRefreshToken } = await generateTokens(user._id);
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  res
+    .status(200)
+    .cookie("refreshToken", newRefreshToken, options)
+    .cookie("accessToken", newAccessToken, options)
+    .json(
+      new ApiResponse(200, "User Logged In Successfully", {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      })
+    );
+});
+
+export { Register, Login, Logout, refreshAccessToken };

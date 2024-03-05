@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuth = useSelector((state: any) => state.auth.isAuth);
+  const isAuth = useSelector((state: any) => state.auth.user!==null);
   const navigate = useNavigate();
   useEffect(() => {
     if (!isAuth) {
