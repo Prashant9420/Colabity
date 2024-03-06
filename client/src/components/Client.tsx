@@ -10,7 +10,7 @@ const Client = ({ username,avatar }: any) => {
       onMouseLeave={() => setUserCss("font-bold")}
     >
       {(!avatar)?<Avatar name={username} round="14px" size="70" />:
-      <Avatar src={avatar} round="14px" textSizeRatio={3} size="70" unstyled={false} />}
+      <Avatar src={avatar} round={true} textSizeRatio={3} size="70" unstyled={false} />}
       <span className={userCss}>
         {(username.at(0).toUpperCase() + username.slice(1)).split(" ")[0]}
       </span>
