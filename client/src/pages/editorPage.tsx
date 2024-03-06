@@ -17,16 +17,29 @@ const EditorPage = () => {
   const user = useSelector((state: any) => state.auth.user);
   const [showLeftColumn, setShowLeftColumn] = useState(true);
   const socketRef = useRef(null as any);
+  const [code,setCode]=useState("");
   const [clients, setClients] = useState([] as any);
-  const handleCopyRoomId = () => {
-    navigator.clipboard.writeText(location.state?.roomId);
-    toast.success("Copied !!");
+  const handleCopyRoomId = async () => {
+    try {
+      await navigator.clipboard.writeText(location.state?.roomId);
+      toast.success("Copied !!");
+    } catch (err) {
+      toast("something went worng");
+    }
   };
   const handleErrors = (err: any) => {
     console.log(err);
     toast.error("error occured, please try again later.");
     navigate("/");
   };
+  const handleCopyCode=async ()=>{
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success("Copied !!");
+    } catch (err) {
+      toast("something went worng");
+    }
+  }
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
@@ -71,7 +84,6 @@ const EditorPage = () => {
           toast.error(`${username} left the meeting`);
         }
       );
-
     };
     init();
     return () => {
@@ -116,8 +128,14 @@ const EditorPage = () => {
             ))}
         </div>
         <div className="flex flex-col w-52 mt-auto ml-auto mr-auto">
-          <button
+        <button
             className="btn btn-success mb-4 mt-4 text-white"
+            onClick={handleCopyCode}
+          >
+            COPY CODE
+          </button>
+          <button
+            className="btn btn-success mb-4 text-white"
             onClick={handleCopyRoomId}
           >
             COPY Room-ID
@@ -136,7 +154,7 @@ const EditorPage = () => {
         </div>
       </div>
       <div className="pt-4 pl-10 w-full overflow-hidden h-full bg-neutral text-xl">
-        <Editor socketRef={socketRef} roomId={location.state?.roomId}/>
+        <Editor socketRef={socketRef} setCode={setCode} roomId={location.state?.roomId} />
       </div>
     </div>
   );

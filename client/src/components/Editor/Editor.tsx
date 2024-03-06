@@ -9,7 +9,7 @@ import "codemirror/mode/python/python";
 import "codemirror/addon/edit/closebrackets";
 import "./editor.css";
 import ACTIONS from "../../utils/Actions";
-const Editor = ({ socketRef, roomId }: { socketRef: any; roomId: string }) => {
+const Editor = ({ socketRef, roomId, setCode }: { socketRef: any; roomId: string,setCode:React.Dispatch<React.SetStateAction<string>> }) => {
   const editorRef = useRef(null as any);
   useEffect(() => {
     async function initEditor() {
@@ -27,6 +27,7 @@ const Editor = ({ socketRef, roomId }: { socketRef: any; roomId: string }) => {
       }
       editorRef.current.on("change", (instance: any, changes: any) => {
         const { origin } = changes;
+        setCode(instance.getValue())
         if (origin !== "setValue") {
           socketRef.current.emit(ACTIONS.CODE_CHANGE, {
             code: instance.getValue(),
@@ -34,15 +35,16 @@ const Editor = ({ socketRef, roomId }: { socketRef: any; roomId: string }) => {
           });
         }
       });
-      socketRef.current.on('ACTIONS.CODE_CHANGE', ({code}:{code: any}) => {
+      socketRef.current?.on(ACTIONS.CODE_CHANGE, ({code}:{code: any}) => {
         console.log("code reecived",code);
         editorRef.current.setValue(code);
+        
       })
       // editorRef.current.setValue(`// Your workspace`);
     }
 
     initEditor();
-  }, []);
+  }, [socketRef.current]);
   return <textarea id="mainRealtimeEditor"></textarea>;
 };
 

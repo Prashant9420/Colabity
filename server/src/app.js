@@ -73,7 +73,6 @@ io.on("connection", (socket) => {
   })
 
   socket.on(Actions.CODE_CHANGE, ({ roomId, code }) => {
-    console.log("changed code recieved", roomId, code);
       socket.to(roomId).emit(Actions.CODE_CHANGE, { code });
   });
 });
