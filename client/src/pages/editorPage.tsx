@@ -17,7 +17,7 @@ const EditorPage = () => {
   const user = useSelector((state: any) => state.auth.user);
   const [showLeftColumn, setShowLeftColumn] = useState(true);
   const socketRef = useRef(null as any);
-  const [code,setCode]=useState("");
+  const codeRef = useRef(null as any);
   const [clients, setClients] = useState([] as any);
   const handleCopyRoomId = async () => {
     try {
@@ -34,7 +34,7 @@ const EditorPage = () => {
   };
   const handleCopyCode=async ()=>{
     try {
-      await navigator.clipboard.writeText(code);
+      await navigator.clipboard.writeText(codeRef.current);
       toast.success("Copied !!");
     } catch (err) {
       toast("something went worng");
@@ -66,12 +66,16 @@ const EditorPage = () => {
           avatar: any;
           clients: any;
         }) => {
-          console.log("incomingSocketId", socketId);
-          console.log("currentSocketId", socketRef.current.id);
+          
           if (socketRef.current.id !== socketId) {
             toast.success(`${username} joined the meeting`);
           }
           setClients(clients);
+          console.log("hello from code",codeRef.current)
+          socketRef.current.emit(ACTIONS.SYNC_CODE,{
+            code:codeRef.current,
+            socketId
+          })
         }
       );
 
@@ -129,13 +133,13 @@ const EditorPage = () => {
         </div>
         <div className="flex flex-col w-52 mt-auto ml-auto mr-auto">
         <button
-            className="btn btn-success mb-4 mt-4 text-white"
+            className="btn btn-success mb-4 mt-4 text-base-100"
             onClick={handleCopyCode}
           >
             COPY CODE
           </button>
           <button
-            className="btn btn-success mb-4 text-white"
+            className="btn btn-success mb-4 text-base-100"
             onClick={handleCopyRoomId}
           >
             COPY Room-ID
@@ -145,7 +149,6 @@ const EditorPage = () => {
             className="btn btn-outline btn-error mb-4"
             onClick={() => {
               toast.success("Meeting Left");
-              socketRef.current.disconnect();
               navigate("/", { state: { fromEditor: true } });
             }}
           >
@@ -153,8 +156,8 @@ const EditorPage = () => {
           </button>
         </div>
       </div>
-      <div className="pt-4 pl-10 w-full overflow-hidden h-full bg-neutral text-xl">
-        <Editor socketRef={socketRef} setCode={setCode} roomId={location.state?.roomId} />
+      <div className={`pt-4 pl-${(showLeftColumn)?5:10} w-full overflow-hidden h-full bg-neutral text-xl`}>
+        <Editor socketRef={socketRef} onCodeChange={(code:any)=>codeRef.current=code} roomId={location.state?.roomId} />
       </div>
     </div>
   );

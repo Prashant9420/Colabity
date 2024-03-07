@@ -9,7 +9,15 @@ import "codemirror/mode/python/python";
 import "codemirror/addon/edit/closebrackets";
 import "./editor.css";
 import ACTIONS from "../../utils/Actions";
-const Editor = ({ socketRef, roomId, setCode }: { socketRef: any; roomId: string,setCode:React.Dispatch<React.SetStateAction<string>> }) => {
+const Editor = ({
+  socketRef,
+  roomId,
+  onCodeChange,
+}: {
+  socketRef: any;
+  roomId: string;
+  onCodeChange: any;
+}) => {
   const editorRef = useRef(null as any);
   useEffect(() => {
     async function initEditor() {
@@ -24,10 +32,12 @@ const Editor = ({ socketRef, roomId, setCode }: { socketRef: any; roomId: string
           autoCloseBrackets: true,
           lineNumbers: true,
         });
+          
       }
+     
       editorRef.current.on("change", (instance: any, changes: any) => {
         const { origin } = changes;
-        setCode(instance.getValue())
+        onCodeChange(instance.getValue());
         if (origin !== "setValue") {
           socketRef.current.emit(ACTIONS.CODE_CHANGE, {
             code: instance.getValue(),
@@ -35,17 +45,21 @@ const Editor = ({ socketRef, roomId, setCode }: { socketRef: any; roomId: string
           });
         }
       });
-      socketRef.current?.on(ACTIONS.CODE_CHANGE, ({code}:{code: any}) => {
-        console.log("code reecived",code);
+      
+      socketRef.current?.on(ACTIONS.CODE_CHANGE, ({ code }: { code: any }) => {
         editorRef.current.setValue(code);
-        
-      })
-      // editorRef.current.setValue(`// Your workspace`);
+      });
+      editorRef.current.setValue(`// Your workspace`);  
     }
 
     initEditor();
+    return () => {
+      socketRef.current.off(ACTIONS.CODE_CHANGE);
+    };
   }, [socketRef.current]);
-  return <textarea id="mainRealtimeEditor"></textarea>;
+
+
+  return<textarea id="mainRealtimeEditor"/>;
 };
 
 export default Editor;

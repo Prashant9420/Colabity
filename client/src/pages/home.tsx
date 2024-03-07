@@ -58,15 +58,15 @@ const Home = () => {
 
   useEffect(() => {
     if (localStorage.getItem("justLoggedIn") === "1") {
-      toast.success(`Welcome ${user.user.username}`);
+      toast.success(`Welcome ${user?.user.username}`);
       localStorage.removeItem("justLoggedIn");
     }
     if (location.state?.fromEditor) {
       console.log("from editor", location.pathname);
       // navigate(location.pathname,{ state: { fromEditor: false }})
     }
-    setUsername(user.user.username);
-  }, []);
+    setUsername(user?.user.username);
+  }, [user]);
   return (
     <div className="flex h-screen items-center justify-center bg-neutral">
       {(loading || meetLoad) ? (
@@ -124,7 +124,7 @@ const Home = () => {
         <h4>
           Built by Prashant Pal &nbsp;
           <a
-            href="https://github.com/prashant9420"
+            href="https://github.com/Prashant9420/Colabity"
             className=" text-secondary border-b-2 border-secondary hover:text-accent hover:border-accent"
             target="_blank"
           >

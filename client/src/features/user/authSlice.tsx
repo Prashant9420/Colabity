@@ -17,36 +17,40 @@ export const loginUser = createAsyncThunk(
 );
 
 export const logoutUser = createAsyncThunk("logoutUser", async () => {
-    const data = await axios.get(`${serverUrl}/api/v1/users/logout`,{headers: {
-      'Authorization': `Bearer ${JSON.parse(localStorage.user).accessToken}`
-    }});
-    console.log(data);
-    localStorage.removeItem("user");
-    return data;
+  const data = await axios.get(`${serverUrl}/api/v1/users/logout`, {
+    headers: {
+      Authorization: `Bearer ${JSON.parse(localStorage.user).accessToken}`,
+    },
+  });
+  console.log(data);
+  localStorage.removeItem("user");
+  return data;
 });
 
 const getInitialState = () => {
-
-  if(localStorage.getItem("user")) {
+  if (localStorage.getItem("user")) {
     return {
       loading: false,
       user: JSON.parse(localStorage.getItem("user") as string),
       error: "",
-    }
-  
+    };
   }
   return {
     loading: false,
     user: null,
     error: "",
-  }
-
-}
-
+  };
+};
 const authSlice = createSlice({
   name: "auth",
   initialState: getInitialState(),
-  reducers: {},
+  reducers: {
+    setState:(state,action)=>{
+      state.user=action.payload.user
+      state.loading=action.payload.loading
+      state.error=action.payload.error
+    }
+  },
   extraReducers: (builder) => {
     builder.addCase(loginUser.pending, (state) => {
       state.loading = true;
@@ -62,11 +66,11 @@ const authSlice = createSlice({
       console.log(action);
       if (action.error.message === "Request failed with status code 403") {
         state.error = "User Not Found";
-      }
-      else if (action.error.message === "Request failed with status code 401") {
+      } else if (
+        action.error.message === "Request failed with status code 401"
+      ) {
         state.error = "Invalid Credentials";
-      }
-      else state.error = action.error.message || "something went wrong";
+      } else state.error = action.error.message || "something went wrong";
     });
     builder.addCase(logoutUser.pending, (state) => {
       state.loading = true;
@@ -83,4 +87,5 @@ const authSlice = createSlice({
     });
   },
 });
+export const {setState}=authSlice.actions
 export default authSlice.reducer;

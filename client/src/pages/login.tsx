@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState,useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../features/user/authSlice";
@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const passRef=useRef();
+  const emailRef=useRef();
   const user = useSelector((state: any) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +20,6 @@ const Login = () => {
     }
     const res = await dispatch<any>(loginUser({ email, password }));
 
-    console.log(res);
     if (res.payload?.success) {
       localStorage.setItem("justLoggedIn", "1");
       navigate("/");
@@ -31,6 +32,12 @@ const Login = () => {
     }
   };
   const handleEnterKey = (e: any) => {
+    if(e.target.type==="email" && e.code==="ArrowDown"){
+      passRef.current.focus()
+    }
+    if(e.target.type==="password" && e.code==="ArrowUp"){
+      emailRef.current.focus()
+    }
     if (e.code === "Enter") {
       handleLogin(e);
     }
@@ -59,8 +66,10 @@ const Login = () => {
               type="email"
               className="grow"
               placeholder="Email"
+              ref={emailRef}
               value={email}
               onKeyUp={handleEnterKey}
+              
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
@@ -81,6 +90,7 @@ const Login = () => {
               type="password"
               className="grow"
               placeholder="Password"
+              ref={passRef}
               value={password}
               onKeyUp={handleEnterKey}
               onChange={(e) => setPassword(e.target.value)}
