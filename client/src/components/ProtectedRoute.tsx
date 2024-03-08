@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     console.log(Date.now() / 1000);
     return tokenExpiry < Date.now() / 1000;
   };
-  const checkUserAuthenticity = async () => {
+  const refreshAccessToken = async () => {
     try {
       const response = await axios.get(
         `${serverUrl}/api/v1/users/refresh-token`,
@@ -31,9 +31,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       const data = await response.data;
       localStorage.setItem("user", JSON.stringify(data.data));
     } catch (error) {
-      setState({ loading: false, user: null, error: "" });
+      // setState({ loading: false, user: null, error: "" });
       localStorage.removeItem("user");
-      navigate("/login");
+      // navigate("/login");
     }
   };
   useEffect(() => {
@@ -41,7 +41,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       localStorage.user &&
       isTokenExpired(JSON.parse(localStorage.user).accessToken)
     ) {
-      checkUserAuthenticity();
+      refreshAccessToken();
     } else {
       console.log("token is valid or NO user was logged in");
     }

@@ -7,8 +7,8 @@ import toast from "react-hot-toast";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const passRef=useRef();
-  const emailRef=useRef();
+  const passRef=useRef(null as any);
+  const emailRef=useRef(null as any);
   const user = useSelector((state: any) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

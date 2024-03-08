@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.route("/register").post(upload.single("avatar"),Register);
 router.route("/login").post(Login);
-router.route("/logout").get(verifyJWT, Logout);
+router.route("/logout").get(verifyJWT,Logout);
 router.route("/refresh-token").get(refreshAccessToken);
 
 export default router;

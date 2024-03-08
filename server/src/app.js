@@ -80,8 +80,11 @@ io.on("connection", (socket) => {
 
   })
 });
+
 // routes
 import userRoutes from "./routes/user.route.js";
+import docRoutes from "./routes/doc.route.js"
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/docs", docRoutes);
 
 export { socketServer };

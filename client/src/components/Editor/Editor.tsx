@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { setContent } from "../../features/user/editorSlice";
+import { useDispatch } from "react-redux";
 import Codemirror from "codemirror";
 import "codemirror/mode/javascript/javascript";
 import "codemirror/lib/codemirror.css";
@@ -13,12 +15,15 @@ const Editor = ({
   socketRef,
   roomId,
   onCodeChange,
+  sendEditorRef
 }: {
   socketRef: any;
   roomId: string;
   onCodeChange: any;
+  sendEditorRef:any;
 }) => {
   const editorRef = useRef(null as any);
+  const dispatch=useDispatch();
   useEffect(() => {
     async function initEditor() {
       const element = document.getElementById(
@@ -34,10 +39,11 @@ const Editor = ({
         });
           
       }
-     
+      sendEditorRef(editorRef.current)
       editorRef.current.on("change", (instance: any, changes: any) => {
         const { origin } = changes;
         onCodeChange(instance.getValue());
+        dispatch(setContent(instance.getValue()))
         if (origin !== "setValue") {
           socketRef.current.emit(ACTIONS.CODE_CHANGE, {
             code: instance.getValue(),
@@ -48,8 +54,7 @@ const Editor = ({
       
       socketRef.current?.on(ACTIONS.CODE_CHANGE, ({ code }: { code: any }) => {
         editorRef.current.setValue(code);
-      });
-      editorRef.current.setValue(`// Your workspace`);  
+      });  
     }
 
     initEditor();
@@ -59,7 +64,7 @@ const Editor = ({
   }, [socketRef.current]);
 
 
-  return<textarea id="mainRealtimeEditor"/>;
+  return<textarea defaultValue={"// Your Workspace"} id="mainRealtimeEditor"/>;
 };
 
 export default Editor;

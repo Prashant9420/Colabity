@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import Hamburgur from "../components/Hamburger";
 import { useNavigate } from "react-router-dom";
+import NavBar from "../components/NavBar";
 import ACTIONS from "../utils/Actions";
 // import { Navigate } from "react-router-dom";
 import { initSocket } from "../utils/socket";
@@ -18,6 +19,7 @@ const EditorPage = () => {
   const [showLeftColumn, setShowLeftColumn] = useState(true);
   const socketRef = useRef(null as any);
   const codeRef = useRef(null as any);
+  const editorRef = useRef(null as any);
   const [clients, setClients] = useState([] as any);
   const handleCopyRoomId = async () => {
     try {
@@ -32,14 +34,7 @@ const EditorPage = () => {
     toast.error("error occured, please try again later.");
     navigate("/");
   };
-  const handleCopyCode=async ()=>{
-    try {
-      await navigator.clipboard.writeText(codeRef.current);
-      toast.success("Copied !!");
-    } catch (err) {
-      toast("something went worng");
-    }
-  }
+
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
@@ -66,16 +61,15 @@ const EditorPage = () => {
           avatar: any;
           clients: any;
         }) => {
-          
           if (socketRef.current.id !== socketId) {
             toast.success(`${username} joined the meeting`);
           }
           setClients(clients);
-          console.log("hello from code",codeRef.current)
-          socketRef.current.emit(ACTIONS.SYNC_CODE,{
-            code:codeRef.current,
-            socketId
-          })
+          console.log("hello from code", codeRef.current);
+          socketRef.current.emit(ACTIONS.SYNC_CODE, {
+            code: codeRef.current,
+            socketId,
+          });
         }
       );
 
@@ -132,12 +126,6 @@ const EditorPage = () => {
             ))}
         </div>
         <div className="flex flex-col w-52 mt-auto ml-auto mr-auto">
-        <button
-            className="btn btn-success mb-4 mt-4 text-base-100"
-            onClick={handleCopyCode}
-          >
-            COPY CODE
-          </button>
           <button
             className="btn btn-success mb-4 text-base-100"
             onClick={handleCopyRoomId}
@@ -156,8 +144,19 @@ const EditorPage = () => {
           </button>
         </div>
       </div>
-      <div className={`pt-4 pl-${(showLeftColumn)?5:10} w-full overflow-hidden h-full bg-neutral text-xl`}>
-        <Editor socketRef={socketRef} onCodeChange={(code:any)=>codeRef.current=code} roomId={location.state?.roomId} />
+      <div
+        className={`pl-${
+          showLeftColumn ? 5 : 10
+        } w-full overflow-hidden h-full bg-neutral text-xl`}
+      >
+        <NavBar editorRef={editorRef} />
+
+        <Editor
+          socketRef={socketRef}
+          sendEditorRef={(incomingEditorRef:any)=>editorRef.current=incomingEditorRef}
+          onCodeChange={(code: any) =>(codeRef.current = code)}
+          roomId={location.state?.roomId}
+        />
       </div>
     </div>
   );
