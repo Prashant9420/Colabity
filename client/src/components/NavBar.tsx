@@ -1,11 +1,13 @@
 import toast from "react-hot-toast";
 import { useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+
 import {
   useGetCodeFilesQuery,
   useSaveCodeFileMutation,
   useDeleteCodeFileMutation,
 } from "../services/api";
+        
 const NavBar = ({ editorRef }: any) => {
   const editor = useSelector((state: any) => state.editor);
   const [saveCodeFile] = useSaveCodeFileMutation();
@@ -50,7 +52,7 @@ const NavBar = ({ editorRef }: any) => {
     setDelLoadingIndex(() => null);
     setIsDelLoading(() => false);
   };
-
+    
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
