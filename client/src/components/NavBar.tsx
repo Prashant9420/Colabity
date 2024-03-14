@@ -1,16 +1,21 @@
 import toast from "react-hot-toast";
-import axios from "axios";
 import { useRef, useState, useEffect } from "react";
-import { serverUrl } from "../utils/serverUrl";
 import { useSelector } from "react-redux";
+import {
+  useGetCodeFilesQuery,
+  useSaveCodeFileMutation,
+  useDeleteCodeFileMutation,
+} from "../services/api";
 const NavBar = ({ editorRef }: any) => {
   const editor = useSelector((state: any) => state.editor);
-  const user = useSelector((state: any) => state.auth);
+  const [saveCodeFile] = useSaveCodeFileMutation();
+  const [deleteCodeFile] = useDeleteCodeFileMutation();
+  const { data, isSuccess } = useGetCodeFilesQuery("");
   const [filename, setFilename] = useState("");
   const [filenameInput, setFilenameInput] = useState(false);
   const [currentFileIndex, setCurrentFileIndex] = useState(null as any);
-  const [codeFiles, setCodeFiles] = useState([] as any);
-  const [isDelLoading,setIsDelLoading]=useState(false);
+  const [isDelLoading, setIsDelLoading] = useState(false);
+  const [delLoadingIndex, setDelLoadingIndex] = useState(null as any);
   const filenameRef = useRef(null as any);
   const handleCopyCode = async () => {
     try {
@@ -25,53 +30,26 @@ const NavBar = ({ editorRef }: any) => {
     if (filenameRef.current) filenameRef.current.focus();
   };
   const handleOpenFile = () => {
-    if(currentFileIndex==null)return;
-    editorRef.current.setValue(codeFiles[currentFileIndex].content);
+    if (currentFileIndex == null) return;
+    editorRef.current.setValue("");
+    editorRef.current.replaceRange(
+      data.data[currentFileIndex].content,
+      { line: 0, ch: 0 },
+      { line: editorRef.current.lastLine(), ch: 0 }
+    );
     setCurrentFileIndex(null);
   };
   const handleSaveCode = async () => {
-    const response = await axios.post(
-      `${serverUrl}/api/v1/docs/save-doc`,
-      {
-        filename,
-        content: editor.content,
-      },
-      { headers: { Authorization: `Bearer ${user.user.accessToken}` } }
-    );
-    const data = response.data;
-    console.log(response);
-    console.log(data);
-    if (data.user) {
-      console.log(data.user);
-    } else console.log("no new user");
-  };
-  const getAllCodeFiles = async () => {
-    const response = await axios.get(`${serverUrl}/api/v1/docs/get-docs`, {
-      headers: { Authorization: `Bearer ${user.user.accessToken}` },
-    });
-    const data = response.data;
-    setCodeFiles(data.data);
-    console.log(data.data);
-    console.log(codeFiles);
+    await saveCodeFile({ filename: filename, content: editor.content });
   };
 
-  const handleDeleteFile = async (index:any)=>{
-  
-    try {
-      setIsDelLoading(true);
-      const response = await axios.post(`${serverUrl}/api/v1/docs/delete-doc`,{docId:codeFiles[index]._id}, {
-        headers: { Authorization: `Bearer ${user.user.accessToken}` },
-      });
-      const data = response.data;
-      console.log(data);
-      setIsDelLoading(false);
-      setCodeFiles((prev:any)=>prev.filter((file:any)=>file._id!=codeFiles[index]._id))
-    } catch (error) {
-      toast.error("something went wrong");
-      setIsDelLoading(false);
-
-    } 
-  }
+  const handleDeleteFile = async (index: any) => {
+    setDelLoadingIndex(() => index);
+    setIsDelLoading(() => true);
+    await deleteCodeFile({ docId: data.data[index]._id });
+    setDelLoadingIndex(() => null);
+    setIsDelLoading(() => false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -84,7 +62,6 @@ const NavBar = ({ editorRef }: any) => {
         setFilenameInput(false);
       }
     };
-    getAllCodeFiles();
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -115,48 +92,54 @@ const NavBar = ({ editorRef }: any) => {
       ) : null}
       <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
-          <h3 className="font-bold text-lg">{(codeFiles.length>0)?"Select a File to Open":"You dont have any saved files."}</h3>
-          {codeFiles.map((file: any, index: any) => (
-            <div className="flex justify-between items-center" key={index}>
-              <p 
-                className={`pl-4 pt-2 pb-2 mt-2 mr-2 rounded-60 w-full ${
-                  currentFileIndex === index
-                    ? "bg-accent text-base-100"
-                    : "hover:bg-neutral"
-                } `}
-                onClick={() => {
-                  setCurrentFileIndex(index);
-                }}
-              >
-                {file.filename}
-              </p>
-              {(!isDelLoading)?<svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="w-6 h-6 cursor-pointer"
-                onClick={()=>handleDeleteFile(index)}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                />
-              </svg>:<span className="loading loading-infinity loading-xs"></span>}
-            </div>
-          ))}
+          <h3 className="font-bold text-lg">
+            {data?.data?.length > 0
+              ? "Select a File to Open"
+              : "You dont have any saved files."}
+          </h3>
+          {isSuccess &&
+            data?.data?.map((file: any, index: any) => (
+              <div className="flex justify-between items-center" key={index}>
+                <p
+                  className={`pl-4 pt-2 pb-2 mt-2 mr-2 rounded-60 w-full ${
+                    currentFileIndex === index
+                      ? "bg-accent text-base-100"
+                      : "hover:bg-neutral"
+                  } `}
+                  onClick={() => {
+                    setCurrentFileIndex(index);
+                  }}
+                >
+                  {file.filename}
+                </p>
+                {isDelLoading && delLoadingIndex === index ? (
+                  <span className="loading loading-infinity loading-xs"></span>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-6 h-6 cursor-pointer"
+                    onClick={() => handleDeleteFile(index)}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                    />
+                  </svg>
+                )}
+              </div>
+            ))}
 
           <div className="modal-action">
             <form method="dialog">
-            <button className="btn m-2">
-                Close
-              </button>
+              <button className="btn m-2">Close</button>
               <button className="btn m-2" onClick={handleOpenFile}>
                 Open File
               </button>
-              
             </form>
           </div>
         </div>
@@ -197,7 +180,11 @@ const NavBar = ({ editorRef }: any) => {
 
       <button
         className="btn btn-sm m-3 hover:shadow-secondary"
-        onClick={() => document.getElementById("my_modal_5")?.showModal()}
+        onClick={() =>
+          (
+            document.getElementById("my_modal_5") as HTMLDialogElement
+          )?.showModal()
+        }
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

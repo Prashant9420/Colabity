@@ -45,7 +45,7 @@ const Editor = ({
         onCodeChange(instance.getValue());
         dispatch(setContent(instance.getValue()))
         if (origin !== "setValue") {
-          socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+            socketRef.current.emit(ACTIONS.CODE_CHANGE, {
             code: instance.getValue(),
             roomId: roomId,
           });

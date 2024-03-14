@@ -23,4 +23,14 @@ const saveDoc = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, "Code Saved Successfully"));
 });
 
-export {saveDoc,getAllDocs}
+const deleteDoc = asyncHandler(async(req,res)=>{
+  const {docId}=req.body;
+  console.log(docId);
+  const result = await Doc.deleteOne({_id:docId});
+  if(!result){
+    throw new ApiError(409,"something went wrong while deleting the document");
+  }
+  return res.status(200).json(new ApiResponse(200,"file deleted successfully"));
+})
+
+export {saveDoc,getAllDocs,deleteDoc}
