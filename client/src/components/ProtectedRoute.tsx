@@ -1,8 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { serverUrl } from "../utils/serverUrl";
-import { setState } from "../features/user/authSlice";
 import axios from "axios";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -18,7 +16,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const refreshAccessToken = async () => {
     try {
       const response = await axios.get(
-        `${serverUrl}/api/v1/users/refresh-token`,
+        `${import.meta.env.VITE_SERVER_URL}/api/v1/users/refresh-token`,
         {
           headers: {
             Authorization: `Bearer ${

@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { serverUrl } from "../utils/serverUrl";
 import toast from "react-hot-toast";
 import Avatar from "react-avatar";
 const Register = () => {
@@ -20,15 +19,17 @@ const Register = () => {
         return;
       }
       const formData = new FormData();
-      
+
       formData.append("avatar", avatar);
       formData.append("username", username);
       formData.append("password", password);
       formData.append("email", email);
       setIsLoading(true);
-      
+
       const data = await axios.post(
-        `${serverUrl}/api/v1/users/register`,formData,{
+        `${import.meta.env.VITE_SERVER_URL}/api/v1/users/register`,
+        formData,
+        {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -39,17 +40,12 @@ const Register = () => {
         toast.success("User Registered Successfully");
         navigate("/login");
       }
-      console.log(data);
     } catch (err: any) {
       setIsLoading(false);
-      console.log(err)
-      const code=err.response?.status;
-      if(code===409)
-        toast.error("User already exists");
-      else
-        toast.error("Something went wrong");
-      console.log(err);
-      
+
+      const code = err.response?.status;
+      if (code === 409) toast.error("User already exists");
+      else toast.error("Something went wrong");
     }
   };
   const handleEnterKey = (e: any) => {
@@ -58,7 +54,7 @@ const Register = () => {
     }
   };
   const handleFileChange = (e: any) => {
-    setAvatar(e.target.files[0]); // Set avatar state to the selected file
+    setAvatar(e.target.files[0]);
   };
 
   return (
@@ -70,30 +66,35 @@ const Register = () => {
       ) : null}
       <h1 className="mb-7 font-bold text-3xl">REGISTER</h1>
       <div className=" lg:w-1/3 md:w-1/2 w-[90%] border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
-      <div id="uploadPhoto" className="relative mb-6 flex flex-col items-center">
-          {/* Add a label to style the file input */}
-          {(!avatar)?<Avatar src={'/user-100.png'} round="14px" size="70" />:
-      <Avatar src={avatar ? URL.createObjectURL(avatar) : ""} round={true} textSizeRatio={3} size="70" unstyled={false} />}
-          <label style={{border:"1px solid #45A29E",borderRadius:"10px"}} htmlFor="avatarInput" className="cursor-pointer mt-3 p-2 hover:text-accent">
+        <div
+          id="uploadPhoto"
+          className="relative mb-6 flex flex-col items-center"
+        >
+          {!avatar ? (
+            <Avatar src={"/user-100.png"} round="14px" size="70" />
+          ) : (
+            <Avatar
+              src={avatar ? URL.createObjectURL(avatar) : ""}
+              round={true}
+              textSizeRatio={3}
+              size="70"
+              unstyled={false}
+            />
+          )}
+          <label
+            style={{ border: "1px solid #45A29E", borderRadius: "10px" }}
+            htmlFor="avatarInput"
+            className="cursor-pointer mt-3 p-2 hover:text-accent"
+          >
             Upload Photo
           </label>
-          {/* Actual file input */}
           <input
             type="file"
             id="avatarInput"
             onChange={handleFileChange}
             className="hidden"
-            accept="image/*" // Specify that only image files can be selected
+            accept="image/*"
           />
-          
-          
-          {/* Display uploaded image */}
-          {/* <img
-            src={avatar ? URL.createObjectURL(avatar) : ""}
-            alt=""
-            
-            className="h-[100px] w-[100px] mb-8 border-2 border-accent rounded-full"
-          /> */}
         </div>
         <div className="flex flex-col w-full">
           <label className="input input-accent flex items-center gap-2">
@@ -155,9 +156,6 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          {/* <div> */}
-        {/* {"Choose Avatar ( OPTIONAL )"}&nbsp;&nbsp;&nbsp; */}
-          {/* </div> */}
         </div>
         <button
           className="btn btn-active btn-neutral mt-10 hover:bg-black hover:text-secondary"
@@ -168,7 +166,10 @@ const Register = () => {
       </div>
       <div className="mt-8">
         Already have an account?&nbsp;&nbsp;
-        <Link to="/login" className="mt-5 text-accent hover:border-b-[1px] border-accent">
+        <Link
+          to="/login"
+          className="mt-5 text-accent hover:border-b-[1px] border-accent"
+        >
           Login
         </Link>
       </div>

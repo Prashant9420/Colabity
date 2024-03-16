@@ -7,6 +7,5 @@ export const initSocket = async () => {
     timeout: 10000,
     transports: ["websocket"],
   };
-  console.log(import.meta.env.VITE_SERVER_URL,options)
   return io(import.meta.env.VITE_SERVER_URL,options);
 };
