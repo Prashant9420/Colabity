@@ -4,7 +4,7 @@ export const codeFilesApi = createApi({
   reducerPath: "codeFilesApi",
   tagTypes: ["CodeFiles"],
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api/v1/docs",
+    baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/docs`,
     prepareHeaders: (headers, { getState }: any) => {
       const token = getState().auth.user.accessToken;
       if (token) {
