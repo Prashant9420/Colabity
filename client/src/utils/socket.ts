@@ -4,7 +4,7 @@ export const initSocket = async () => {
   const options = {
     "force new connection": true,
     reconnectionAttempt: 1,
-    timeout: 10000,
+    timeout: 50000,
     transports: ["websocket"],
   };
   return io(import.meta.env.VITE_SERVER_URL,options);
