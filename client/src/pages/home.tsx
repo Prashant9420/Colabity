@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
+import AnimBg from '../components/animatedBg/AnimBg.tsx'
 import { logoutUser } from "../features/user/authSlice";
 
 const Home = () => {
@@ -69,6 +70,7 @@ const Home = () => {
   }, [user]);
   return (
     <div className="flex h-screen items-center justify-center bg-neutral">
+      <AnimBg/>
       {(loading || meetLoad) ? (
         <div className=" bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
           <span className="loading loading-bars loading-lg"></span>
@@ -80,7 +82,7 @@ const Home = () => {
       >
         LOGOUT
       </button>
-      <div className=" bg-primary p-[20px] rounded-md w-[500px] max-w-[90%] shadow-lg transition-shadow duration-1000 hover:shadow-secondary">
+      <div className="relative bg-primary p-[20px] rounded-md w-[500px] max-w-[90%] shadow-lg transition-shadow duration-1000 hover:shadow-secondary">
         <img src="/logo.png" className=" h-32" />
         <h4 className="mb-6 mt-2 font-bold text-base-100">
           Paste invitation ROOM ID
