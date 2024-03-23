@@ -15,7 +15,6 @@ const Home = () => {
   const loading = useSelector((state: any) => state.auth.loading);
   const [roomId, setRoomId] = useState("");
   const [username, setUsername] = useState("");
-  const [meetLoad, setMeetLoad] = useState(false);
   const createNewRoom = (e: any) => {
     e.preventDefault();
     const newId = uuid();
@@ -23,24 +22,21 @@ const Home = () => {
     toast.success("New room created");
   };
   const joinRoom = () => {
-    if (roomId === "" || username === "") {
-      toast.error("Room-ID or Username can't be empty");
-      return;
-    }
-    setMeetLoad(true);
-    console.log("meetLoad: ",meetLoad)
-    setTimeout(() => {
+    try {
       
+      if (roomId === "" || username === "") {
+        toast.error("Room-ID or Username can't be empty");
+        return;
+      }
       navigate(`/editor/${roomId}`, {
         state: {
           username,
           roomId,
         },
       });
-      setMeetLoad(false);
-    },2000)
-    
-    
+    } catch (error) {
+      toast.error("something went wrong");
+    }  
   };
 
   const handleEnter = (e: any) => {
@@ -71,7 +67,7 @@ const Home = () => {
   return (
     <div className="flex h-screen items-center justify-center bg-neutral">
       <AnimBg/>
-      {(loading || meetLoad) ? (
+      {(loading) ? (
         <div className=" bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
           <span className="loading loading-bars loading-lg"></span>
         </div>
