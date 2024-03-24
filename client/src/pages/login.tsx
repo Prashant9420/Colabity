@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../features/user/authSlice";
 import toast from "react-hot-toast";
+import AnimBg from "../components/animatedBg/AnimBg";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -44,13 +45,14 @@ const Login = () => {
   };
   return (
     <div className="h-screen flex flex-col items-center w-full justify-center">
+      <AnimBg />
       {user.loading ? (
-        <div className=" bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
+        <div className="fixed flex justify-center z-[1] bg-black bg-opacity-50 w-screen h-screen">
           <span className="loading loading-bars loading-lg"></span>
         </div>
       ) : null}
-      <h1 className="mb-7 font-bold text-3xl">LOGIN</h1>
-      <div className=" lg:w-1/3 md:w-1/2 w-[90%] border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
+      <h1 className="relative mb-7 font-bold text-3xl">LOGIN</h1>
+      <div className="relative lg:w-1/3 md:w-1/2 w-[90%] border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
         <div className="flex flex-col w-full">
           <label className="input input-accent flex items-center gap-2">
             <svg
@@ -103,7 +105,7 @@ const Login = () => {
           Login
         </button>
       </div>
-      <div className="mt-8">
+      <div className="relative mt-8">
         Don't have an account?&nbsp;&nbsp;
         <Link
           to="/register"

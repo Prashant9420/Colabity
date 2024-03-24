@@ -68,7 +68,7 @@ const Home = () => {
     <div className="flex h-screen items-center justify-center bg-neutral">
       <AnimBg/>
       {(loading) ? (
-        <div className=" bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
+        <div className="z-[1] bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
           <span className="loading loading-bars loading-lg"></span>
         </div>
       ) : null}

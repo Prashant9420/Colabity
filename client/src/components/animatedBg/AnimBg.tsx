@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-
+import './animBg.css'
 const ParticleCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

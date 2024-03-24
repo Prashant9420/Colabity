@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Avatar from "react-avatar";
+import AnimBg from '../components/animatedBg/AnimBg'
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -59,13 +60,14 @@ const Register = () => {
 
   return (
     <div className="h-screen flex flex-col items-center w-full justify-center">
+      <AnimBg/>
       {isLoading ? (
-        <div className=" bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
+        <div className="z-[1] bg-black bg-opacity-50 fixed w-screen h-screen flex justify-center">
           <span className="loading loading-bars loading-lg"></span>
         </div>
       ) : null}
-      <h1 className="mb-7 font-bold text-3xl">REGISTER</h1>
-      <div className=" lg:w-1/3 md:w-1/2 w-[90%] border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
+      <h1 className="relative mb-7 font-bold text-3xl">REGISTER</h1>
+      <div className="relative lg:w-1/3 md:w-1/2 w-[90%] border-2 border-accent p-12 rounded-xl shadow-2xl flex flex-col items-center hover:shadow-secondary transition-all duration-1000">
         <div
           id="uploadPhoto"
           className="relative mb-6 flex flex-col items-center"
@@ -164,7 +166,7 @@ const Register = () => {
           Register
         </button>
       </div>
-      <div className="mt-8">
+      <div className="relative mt-8">
         Already have an account?&nbsp;&nbsp;
         <Link
           to="/login"
