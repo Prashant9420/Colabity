@@ -149,7 +149,8 @@ const NavBar = ({ editorRef }: any) => {
       </dialog>
       <button
         className="btn btn-sm m-3 hover:shadow-secondary"
-        onClick={handleSave}
+        // onClick={handleSave}
+        onClick={()=>document.getElementById('my_modal_1').showModal()}
       >
         <svg
           width="24px"
@@ -180,6 +181,32 @@ const NavBar = ({ editorRef }: any) => {
         </svg>
         Save Code
       </button>
+      {/* Open the modal using document.getElementById('ID').showModal() method */}
+{/* <button className="btn" onClick={()=>document.getElementById('my_modal_1').showModal()}>open modal</button> */}
+<dialog id="my_modal_1" className="modal">
+  <div className="modal-box">
+    {/* <h3 className="font-bold text-lg">File Name</h3> */}
+    {/* <input className="py-4"/> */}
+    <input type="text" placeholder="Filename" onChange={(e) => setFilename(e.target.value)} className="input input-bordered w-full mt-4" />
+    <div className="modal-action">
+    <button className="btn" onClick={
+      () => {
+          toast.promise(handleSaveCode(), {
+            loading: "Saving...",
+            success: <b>file saved!</b>,
+            error: <b>Could not save.</b>,
+          });
+          setFilename("");
+          document.getElementById('my_modal_1')?.close();
+      }
+    }>Save File</button>
+      <form method="dialog">
+        {/* if there is a button in form, it will close the modal */}
+        <button className="btn">Cancel</button>
+      </form>
+    </div>
+  </div>
+</dialog>
 
       <button
         className="btn btn-sm m-3 hover:shadow-secondary"
